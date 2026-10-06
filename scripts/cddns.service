@@ -1,0 +1,18 @@
+[Unit]
+Description=cddns - 域名反向代理与免费证书管理
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cddns run --config /etc/cddns/config.yaml
+Restart=on-failure
+RestartSec=5s
+# 证书、数据与配置目录（避免依赖 HOME，也避免向任意用户主目录写文件）
+Environment=CDDNS_CONFIG=/etc/cddns/config.yaml
+Environment=CDDNS_DATA_DIR=/var/lib/cddns
+Environment=XDG_DATA_HOME=/var/lib/cddns
+Environment=XDG_CONFIG_HOME=/var/lib/cddns
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,32 @@
+# cddns 容器化部署
+#
+# 首次配置（向导需要交互终端）：
+#   docker compose run --rm cddns setup
+# 启动服务：
+#   docker compose up -d
+# 查看日志 / 停止：
+#   docker compose logs -f cddns
+#   docker compose down
+#
+# 必须用 host 网络：反向代理要监听宿主机 80/443，ACME 也需要真实外部可达端口。
+# 镜像同时发布在 ghcr.io/nas200-timmy/cddns（多架构 amd64/arm64/armv7）。
+
+services:
+  cddns:
+    build:
+      context: .
+      args:
+        VERSION: ${CDDNS_VERSION:-dev}
+    image: ${CDDNS_IMAGE:-cddns:latest}
+    container_name: cddns
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /etc/cddns:/etc/cddns
+      - /var/lib/cddns:/var/lib/cddns
+    # 80/443 低于 1024，容器内需保留绑定特权端口的权限
+    cap_add:
+      - NET_BIND_SERVICE
+    environment:
+      CDDNS_CONFIG: /etc/cddns/config.yaml
+      CDDNS_DATA_DIR: /var/lib/cddns
