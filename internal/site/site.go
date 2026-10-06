@@ -71,7 +71,8 @@ func Generate(cfg *config.Config) string {
 		}
 		b.WriteString("}\n\n")
 	}
-	return b.String()
+	// 末尾多出的空行会被 Caddy 判定为“未格式化”，去掉后与 caddy fmt 输出一致。
+	return strings.TrimSuffix(b.String(), "\n")
 }
 
 // UpstreamAddr 计算反向代理上游地址（IPv6 字面量加方括号）。
