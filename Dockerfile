@@ -2,10 +2,13 @@
 FROM golang:1.25-alpine AS build
 
 ARG VERSION=dev
+# 墙内构建时改走国内代理：--build-arg GOPROXY=https://goproxy.cn,direct
+ARG GOPROXY=https://proxy.golang.org,direct
 
 WORKDIR /src
 # 先只拷贝依赖清单，让模块下载层可复用
 COPY go.mod go.sum ./
+ENV GOPROXY=${GOPROXY}
 RUN go mod download
 
 COPY cmd ./cmd
