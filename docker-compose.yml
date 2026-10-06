@@ -17,6 +17,8 @@ services:
       context: .
       args:
         VERSION: ${CDDNS_VERSION:-dev}
+        # 墙内构建时导出 GOPROXY=https://goproxy.cn,direct
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
     image: ${CDDNS_IMAGE:-cddns:latest}
     container_name: cddns
     network_mode: host

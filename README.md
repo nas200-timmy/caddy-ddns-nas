@@ -66,6 +66,13 @@ docker run -d --name cddns --network host --restart unless-stopped \
 
 配置与证书都在挂载出去的两个目录里，容器重建不丢数据。
 
+从源码构建镜像（墙内需指定 Go 模块代理，否则 `go mod download` 会卡在 proxy.golang.org）：
+
+```sh
+docker build --build-arg GOPROXY=https://goproxy.cn,direct -t cddns:latest .
+# 或：GOPROXY=https://goproxy.cn,direct docker compose build
+```
+
 ## 命令与配置
 
 | 命令 | 说明 |
