@@ -13,11 +13,11 @@ jobs:
     name: 发布二进制包
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # 需要完整历史，git describe 才能取到 tag 作为版本号
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.25'
           cache: true
@@ -25,6 +25,20 @@ jobs:
         run: go test ./...
       - name: 交叉编译并打包（amd64 / arm64 / armv7）
         run: make dist
+      - name: 校验各包内二进制架构与包名一致
+        run: |
+          set -e
+          declare -A want=( [amd64]=62 [arm64]=183 [armv7]=40 )
+          for name in amd64 arm64 armv7; do
+            # 注意：二进制不能经 $(...) 传递（会丢 NUL 字节），必须在管道里处理
+            machine=$(tar -xzOf dist/*_linux-${name}.tar.gz --wildcards '*/cddns' \
+              | head -c 20 | od -An -tu1 | tr -s ' \n' ' ' | awk '{print $19}')
+            echo "linux-$name: e_machine=$machine（期望 ${want[$name]}）"
+            [ "$machine" = "${want[$name]}" ] || {
+              echo "::error::linux-$name 包里的二进制架构不对"
+              exit 1
+            }
+          done
       - name: 上传到 GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -44,16 +58,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: 构建并推送多架构镜像到 GHCR
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v7
