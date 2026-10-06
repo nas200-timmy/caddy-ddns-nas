@@ -9,7 +9,7 @@
 #   docker compose down
 #
 # 必须用 host 网络：反向代理要监听宿主机 80/443，ACME 也需要真实外部可达端口。
-# 镜像同时发布在 ghcr.io/nas200-timmy/cddns（多架构 amd64/arm64/armv7）。
+# 镜像同时发布在 ghcr.io/nas200-timmy/caddy-ddns-nas（多架构 amd64/arm64/armv7）。
 
 services:
   cddns:

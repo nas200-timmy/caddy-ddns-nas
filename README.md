@@ -1,9 +1,10 @@
-# cddns
+# caddy-ddns-nas
 
-[![CI](https://github.com/nas200-timmy/cddns/actions/workflows/ci.yml/badge.svg)](https://github.com/nas200-timmy/cddns/actions/workflows/ci.yml)
-[![Release](https://github.com/nas200-timmy/cddns/actions/workflows/release.yml/badge.svg)](https://github.com/nas200-timmy/cddns/releases)
+[![CI](https://github.com/nas200-timmy/caddy-ddns-nas/actions/workflows/ci.yml/badge.svg)](https://github.com/nas200-timmy/caddy-ddns-nas/actions/workflows/ci.yml)
+[![Release](https://github.com/nas200-timmy/caddy-ddns-nas/actions/workflows/release.yml/badge.svg)](https://github.com/nas200-timmy/caddy-ddns-nas/releases)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-域名反向代理 + 免费证书（Let's Encrypt DNS-01）一站式部署工具。
+一个静态二进制搞定域名反向代理 + Let's Encrypt 免费证书：TUI 向导配置源站与 DNS 凭证，内置 DDNS 自动更新 A 记录与内嵌 Caddy，支持阿里云 / 腾讯云 DNSPod / Cloudflare。命令名是 `cddns`。
 
 一个静态二进制完成 ddns-go + Caddy 两者组合的效果：在 ECS 或有公网 IPv4 的机器上，
 走一遍 Debian 安装器风格的 TUI 向导（源站 → 端口 → DNS 凭证 → 域名），程序自动：
@@ -22,7 +23,7 @@ DNS 服务商（阿里云 / 腾讯云 DNSPod / Cloudflare）统一基于 libdns 
 
 ```sh
 # 方式一：脚本安装指定版本（自动匹配本机架构）
-curl -fsSL https://raw.githubusercontent.com/nas200-timmy/cddns/main/scripts/install.sh \
+curl -fsSL https://raw.githubusercontent.com/nas200-timmy/caddy-ddns-nas/main/scripts/install.sh \
   | sudo sh -s -- --version v1.0.0
 
 # 方式二：下载发布包手动安装
@@ -61,7 +62,7 @@ docker compose up -d
 docker run -d --name cddns --network host --restart unless-stopped \
   --cap-add NET_BIND_SERVICE \
   -v /etc/cddns:/etc/cddns -v /var/lib/cddns:/var/lib/cddns \
-  ghcr.io/nas200-timmy/cddns:latest
+  ghcr.io/nas200-timmy/caddy-ddns-nas:latest
 ```
 
 配置与证书都在挂载出去的两个目录里，容器重建不丢数据。
@@ -140,7 +141,7 @@ make docker     # buildx 多架构镜像（需要 buildx）
   `internal/config`（配置读写与校验）、`internal/service`（headless 服务与热重载）。
 - 提交前会跑 `gofmt`、`go vet`、`go test -race`（见 `.github/workflows/ci.yml`）。
 - 打 `v*` tag 会自动交叉编译三个架构、生成 `checksums.txt` 并发布 Release，
-  同时把多架构镜像推到 `ghcr.io/nas200-timmy/cddns`。
+  同时把多架构镜像推到 `ghcr.io/nas200-timmy/caddy-ddns-nas`。
 
 ## FAQ
 
@@ -151,3 +152,11 @@ make docker     # buildx 多架构镜像（需要 buildx）
 - **不想装 systemd 单元？** `sudo ./install.sh --dry-run` 先看它要做什么；
   `sudo ./install.sh --uninstall` 卸载（保留配置与证书目录）。
 - **要在非默认路径跑？** 用 `--config` 或 `CDDNS_CONFIG` / `CDDNS_DATA_DIR` 覆盖。
+
+## 许可证
+
+本项目采用 [GNU GPL v3.0](LICENSE)。
+
+注意依赖许可的差异：内嵌的 **Caddy 及其部分依赖是 Apache-2.0**，DNS 库多为 MIT。
+GPLv3 与 Apache-2.0 兼容，但分发二进制（发布包 / 容器镜像）时仍需一并提供这些组件的许可证文本，
+所以打包产物里包含本项目的 `LICENSE`；完整第三方许可证清单尚待补充。

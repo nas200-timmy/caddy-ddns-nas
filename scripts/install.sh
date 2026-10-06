@@ -13,12 +13,12 @@
 #   CDDNS_CONF       配置目录（默认 /etc/cddns）
 #   CDDNS_DATA_DIR   数据目录，证书存储（默认 /var/lib/cddns）
 #   CDDNS_SERVICE    systemd 单元路径（默认 /etc/systemd/system/cddns.service）
-#   CDDNS_REPO       GitHub 仓库 owner/repo（默认 nas200-timmy/cddns）
+#   CDDNS_REPO       GitHub 仓库 owner/repo（默认 nas200-timmy/caddy-ddns-nas）
 #   CDDNS_BASE_URL   自定义下载前缀，优先于 CDDNS_REPO（内网镜像/自建发布源）
 set -eu
 
 # 本项目仓库：发布包下载来源，改仓库名或迁移时用 CDDNS_REPO 覆盖。
-DEFAULT_REPO=nas200-timmy/cddns
+DEFAULT_REPO=nas200-timmy/caddy-ddns-nas
 
 BIN=${CDDNS_BIN:-/usr/local/bin/cddns}
 CONF=${CDDNS_CONF:-/etc/cddns}

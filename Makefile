@@ -34,9 +34,9 @@ install: build
 release: build
 	rm -rf $(RELEASE_DIR)
 	mkdir -p $(RELEASE_DIR)
-	cp $(BINARY) scripts/install.sh scripts/cddns.service $(RELEASE_DIR)/
+	cp $(BINARY) scripts/install.sh scripts/cddns.service LICENSE $(RELEASE_DIR)/
 	chmod 755 $(RELEASE_DIR) $(RELEASE_DIR)/cddns $(RELEASE_DIR)/install.sh
-	chmod 644 $(RELEASE_DIR)/cddns.service
+	chmod 644 $(RELEASE_DIR)/cddns.service $(RELEASE_DIR)/LICENSE
 	@echo "发布目录: $(RELEASE_DIR)/（cddns + install.sh + cddns.service）"
 
 # 多架构发布包：linux/amd64、linux/arm64、linux/armv7
@@ -52,9 +52,9 @@ dist:
 		mkdir -p "$$dir"; \
 		GOOS=linux GOARCH=$$goarch GOARM=$$goarm CGO_ENABLED=0 \
 			go build $(BUILD_FLAGS) -ldflags "$(LDFLAGS)" -o "$$dir/cddns" ./cmd/cddns; \
-		cp scripts/install.sh scripts/cddns.service README.md "$$dir/"; \
+		cp scripts/install.sh scripts/cddns.service README.md LICENSE "$$dir/"; \
 		chmod 755 "$$dir" "$$dir/cddns" "$$dir/install.sh"; \
-		chmod 644 "$$dir/cddns.service" "$$dir/README.md"; \
+		chmod 644 "$$dir/cddns.service" "$$dir/README.md" "$$dir/LICENSE"; \
 		tar -C $(DIST_DIR) -czf "$$dir.tar.gz" "$$(basename $$dir)"; \
 		rm -rf "$$dir"; \
 	done; \

@@ -23,6 +23,8 @@ FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata
 
 COPY --from=build /out/cddns /usr/local/bin/cddns
+# 分发镜像同样需要附带许可证（GPLv3 本项目 + Apache-2.0 的 Caddy 等依赖）
+COPY LICENSE /usr/share/licenses/caddy-ddns-nas/LICENSE
 
 # 配置与证书目录：容器里靠挂载持久化
 VOLUME ["/etc/cddns", "/var/lib/cddns"]
