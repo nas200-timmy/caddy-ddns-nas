@@ -1,9 +1,16 @@
-# 多阶段构建：产物是静态二进制（CGO_ENABLED=0），也可直接丢进 distroless / scratch
-FROM golang:1.25-alpine AS build
+# 多阶段构建，产物是静态二进制（CGO_ENABLED=0），也可直接丢进 distroless / scratch
+#
+# 关键点：构建阶段用 --platform=$BUILDPLATFORM 固定在宿主架构上，
+# 靠 GOARCH/GOARM 交叉编译目标架构。Go 交叉编译是原生速度，
+# 多架构构建因此不需要在 QEMU 下编译整个依赖树（否则 arm64/armv7 会慢到几十分钟）。
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
 
 ARG VERSION=dev
 # 墙内构建时改走国内代理：--build-arg GOPROXY=https://goproxy.cn,direct
 ARG GOPROXY=https://proxy.golang.org,direct
+# buildx 多架构构建时自动注入
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 WORKDIR /src
 # 先只拷贝依赖清单，让模块下载层可复用
@@ -13,9 +20,15 @@ RUN go mod download
 
 COPY cmd ./cmd
 COPY internal ./internal
-RUN CGO_ENABLED=0 go build -trimpath -buildvcs=false \
-	-ldflags "-s -w -X main.version=${VERSION}" \
-	-o /out/cddns ./cmd/cddns
+
+RUN set -eux; \
+	targetarch="${TARGETARCH:-$(go env GOARCH)}"; \
+	targetarm=""; \
+	if [ "$targetarch" = "arm" ]; then targetarm="${TARGETVARIANT#v}"; fi; \
+	GOOS=linux GOARCH="$targetarch" GOARM="$targetarm" CGO_ENABLED=0 \
+		go build -trimpath -buildvcs=false \
+		-ldflags "-s -w -X main.version=${VERSION}" \
+		-o /out/cddns ./cmd/cddns
 
 FROM alpine:3.21
 

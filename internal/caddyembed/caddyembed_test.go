@@ -64,9 +64,25 @@ func freePort(t *testing.T) int {
 	return ln.Addr().(*net.TCPAddr).Port
 }
 
+// canBind443 探测当前环境能否监听 443：Caddy 启动站点需要它。
+// 非特权环境（例如 CI 里的普通用户）会因权限不足绑不上。
+func canBind443() bool {
+	ln, err := net.Listen("tcp", ":443")
+	if err != nil {
+		return false
+	}
+	ln.Close()
+	return true
+}
+
 // TestIssueCertConfigValid 验证 DNS-01 配置能被 Caddy 解析并启动，
 // 假凭证下签发必然失败，IssueCert 应在超时后报错（而非配置错误）。
+// 该路径需要真实监听 443，无法绑定的环境跳过而不是报失败。
 func TestIssueCertConfigValid(t *testing.T) {
+	if !canBind443() {
+		t.Skip("无法绑定 :443（需 root 或 net.ipv4.ip_unprivileged_port_start=0），跳过证书签发路径验证")
+	}
+
 	dir := t.TempDir()
 	caddyfile := filepath.Join(dir, "Caddyfile")
 	t.Setenv(site.EnvAliyunID, "fake-id")
